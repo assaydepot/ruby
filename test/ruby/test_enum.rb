@@ -114,6 +114,11 @@ class TestEnumerable < Test::Unit::TestCase
     assert_equal([1, 2, 3, 1, 2], @obj.to_a)
   end
 
+  def test_to_a_keywords
+    def @obj.each(foo:) yield foo end
+    assert_equal([1], @obj.to_a(foo: 1))
+  end
+
   def test_to_a_size_symbol
     sym = Object.new
     class << sym
@@ -320,6 +325,17 @@ class TestEnumerable < Test::Unit::TestCase
       end
       empty.first
       empty.block.call
+    end;
+
+    bug18475 = '[ruby-dev:107059]'
+    assert_in_out_err([], <<-'end;', [], /unexpected break/, bug18475)
+      e = Enumerator.new do |g|
+        Thread.new do
+          g << 1
+        end.join
+      end
+
+      e.first
     end;
   end
 
