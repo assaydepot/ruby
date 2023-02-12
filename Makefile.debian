@@ -1,0 +1,13 @@
+PKG_NAME := ruby2.7-jemalloc
+
+docker-build-env:
+	docker build -t build-env -f Dockerfile.build .
+
+exec:
+	docker run --rm -it -v $(PWD):/tmp/$(PKG_NAME).orig --workdir=/tmp/$(PKG_NAME).orig -e DEBEMAIL=xrlange@gmail.com build-env bash
+
+build-deps:
+	mk-build-deps -i debian/control
+
+ruby2.7_2.7.6.orig.tar.gz:
+	curl https://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.6.tar.gz --output $@
