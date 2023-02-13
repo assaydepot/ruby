@@ -1,0 +1,26 @@
+name: Publish custom cross images
+
+on:
+  workflow_dispatch:
+  push: {}
+#    branches:
+#      - main
+#    paths:
+#      - "build/cross-images/*"
+
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Install build tools
+        run: apt-get update; apt-get install -y git-buildpackage vim git build-essential ruby
+
+      - name: Native debian build
+        run: DEB_BUILD_OPTIONS=nocheck gbp buildpackage --git-ignore-new --git-no-pristine-tar -us -uc
+
+      - name: Check things out
+        run: ls; ls ..
