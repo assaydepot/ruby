@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         arch: [amd64, arm64]
-        dist: [jammy]
+        dist: [focal]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -44,7 +44,7 @@ jobs:
         run: DIST=${{ matrix.dist }} ARCH=${{matrix.arch }} git-pbuilder create --mirror=${{ steps.mirror_url.outputs.MIRROR_URL }}
 
       - name: Build
-        run: DEB_BUILD_OPTIONS=nocheck gbp buildpackage --git-pbuilder --git-ignore-new --git-no-pristine-tar --git-arch=${{ matrix.arch }} --git-dist=${{ matrix.dist }} -us -uc
+        run: gbp buildpackage --git-pbuilder --git-ignore-new --git-no-pristine-tar --git-arch=${{ matrix.arch }} --git-dist=${{ matrix.dist }} -us -uc
 
       - name: Check things out
         run: ls; ls ..
