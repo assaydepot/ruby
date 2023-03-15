@@ -1,0 +1,65 @@
+name: Publish custom cross images
+
+on:
+  workflow_dispatch:
+  push: {}
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      DEB_BUILD_OPTIONS: nocheck
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        dist: [jammy]
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Get Ubuntu mirror URL
+        run: |
+          UBUNTU_MIRROR_LOOKUP='{ "amd64": "http://archive.ubuntu.com/ubuntu/", "arm64": "http://ports.ubuntu.com/ubuntu-ports/" }'
+          ARCHITECTURE="${{ matrix.arch }}"
+          MIRROR_URL=$(echo "${UBUNTU_MIRROR_LOOKUP}" | jq -r ".$ARCHITECTURE")
+          echo MIRROR_URL=$MIRROR_URL >> $GITHUB_OUTPUT
+        id: mirror_url
+
+      - name: Install tools
+        run: sudo apt-get update; sudo apt-get install -y git-buildpackage vim git build-essential ruby debhelper
+
+      - name: Install build dependencies
+        run: sudo apt build-dep . -y
+
+      - name: Create base image
+        run: DIST=${{ matrix.dist }} ARCH=${{matrix.arch }} git-pbuilder create --mirror=${{ steps.mirror_url.outputs.MIRROR_URL }}
+
+      - name: Build
+        run: DEB_BUILD_OPTIONS=nocheck gbp buildpackage --git-ignore-new --git-no-pristine-tar --git-arch=${{ matrix.arch }} --git-dist=${{ matrix.dist }} -us -uc
+
+      - name: Check things out
+        run: ls; ls ..
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::554546661178:role/gha-ruby-debian
+          role-session-name: samplerolesession
+          aws-region: eu-central-1
+      # Upload a file to AWS s3
+      - name:  Copy index.html to s3
+        run: |
+          sudo apt-get install ruby awscli
+          sudo gem install deb-s3
+          aws sts get-caller-identity
+          aws s3 ls s3://scientist-ruby/
+          deb-s3 upload --bucket=scientist-ruby --s3-region=eu-central-1 --arch=${{ matrix.arch }} --codename=${{ matrix.dist }} ../*.deb
