@@ -16,9 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs_on: [ubuntu-22.04, ubuntu-20.04]
+        runs_on: [ubuntu-20.04]
         arch: [amd64, arm64]
-        dist: [focal, jammy]
+        dist: [focal]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
