@@ -18,7 +18,7 @@ jobs:
       matrix:
         runs_on: [ubuntu-22.04, ubuntu-20.04]
         arch: [amd64, arm64]
-        dist: [jammy]
+        dist: [focal, jammy]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
