@@ -13,6 +13,7 @@ jobs:
     runs-on: ${{ matrx.runs_on }}
     env:
       DEB_BUILD_OPTIONS: nocheck
+    fail-fast: false
     strategy:
       matrix:
         runs_on: [ubuntu-22.04, ubuntu-20.04]
