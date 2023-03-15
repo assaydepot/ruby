@@ -10,13 +10,14 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrx.runs_on }}
     env:
       DEB_BUILD_OPTIONS: nocheck
     strategy:
       matrix:
+        runs_on: [ubuntu-22.04, ubuntu-20.04]
         arch: [amd64, arm64]
-        dist: [focal]
+        dist: [jammy]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
