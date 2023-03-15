@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrx.runs_on }}
+    runs-on: ${{ matrix.runs_on }}
     env:
       DEB_BUILD_OPTIONS: nocheck
     fail-fast: false
